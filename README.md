@@ -139,7 +139,7 @@ This code is heavily built on [LLMTest_NeedleInAHaystack](https://github.com/gka
 
 ```bibtex
 @article{mm-niavh,
-    title={Multimodal Needle in A Video Haystack},
+    title={Multimodal Needle In A Video Haystack},
     author={Wang, Yuxuan and Xie, Cihang and Liu, Yang and Zheng, Zilong},
     journal={github},
     year={2024}
