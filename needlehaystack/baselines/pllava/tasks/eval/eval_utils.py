@@ -22,7 +22,10 @@ from decord import VideoReader, cpu # This is Terrible, if you have this line of
 from transformers import StoppingCriteria, StoppingCriteriaList
 from transformers import AutoProcessor, AutoModelForZeroShotObjectDetection
 
-from pllava.utils.easydict import EasyDict
+from needlehaystack.baselines.pllava.utils.easydict import EasyDict
+
+
+
 
 IMAGE_TOKEN = "<image>"
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

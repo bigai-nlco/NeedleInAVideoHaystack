@@ -1,4 +1,0 @@
-    PID TTY      STAT   TIME COMMAND
-2239577 pts/10   Ss     0:00 /usr/bin/bash
-2261454 pts/10   Dl     0:17 python ../evaluations/evaluation.py --model_name PLLaVA --benchmark_name egoschema --cache_dir ./cache_dir --video_dir ../VideoQA/EgoSchema_Zero_Shot_QA/videos --gt_file_question ../VideoQA/EgoSchema_Zero_Shot_QA/test_q.json --gt_file_answers ../VideoQA/EgoSchema_Zero_Shot_QA/test_a.json --output_dir results/EgoSchema/ --num_chunks 1 --chunk_idx 0
-2273414 pts/10   R+     0:00 ps -x

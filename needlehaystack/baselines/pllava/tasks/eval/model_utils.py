@@ -4,8 +4,8 @@ import os
 from peft import get_peft_model, LoraConfig, TaskType
 from safetensors import safe_open
 from peft import PeftModel
-from pllava.tasks.eval.eval_utils import Conversation
-from pllava.models.pllava import PllavaProcessor, PllavaForConditionalGeneration, PllavaConfig
+from needlehaystack.baselines.pllava.tasks.eval.eval_utils import Conversation
+from needlehaystack.baselines.pllava.models.pllava import PllavaProcessor, PllavaForConditionalGeneration, PllavaConfig
 from accelerate import init_empty_weights, dispatch_model, infer_auto_device_map,load_checkpoint_in_model
 from accelerate.utils import get_balanced_memory
 

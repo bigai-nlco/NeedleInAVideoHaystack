@@ -27,7 +27,8 @@ class LLMNeedleHaystackTester:
                  needle = None,
                  needle_desc = None,
                  needle_modality = None,
-                 haystack_dir = "Ego",
+                 needle_dir = "haystack",
+                 haystack_dir = "haystack/ego",
                  retrieval_question = None,
                  results_version = 1,
                  context_lengths_min = 300,
@@ -59,15 +60,15 @@ class LLMNeedleHaystackTester:
         :param save_results: Whether or not you would like to save your contexts to file. Warning: These will get long! Default = True
         :param save_contexts: Whether or not you would like to save your contexts to file. Warning: These will get long! Default is True.
         :param final_context_length_buffer: The amount of cushion you'd like to leave off the input context to allow for the output context. Default 200 tokens
-        :param context_lengths_min: The minimum length of the context. Default is 300 seconds.
-        :param context_lengths_max: The maximum length of the context. Default is 3000 seconds.
-        :param context_lengths_num_intervals: The number of intervals for the context length. Default is 35.
+        :param context_lengths_min: The minimum length of the context. Default is 1 seconds.
+        :param context_lengths_max: The maximum length of the context. Default is 320 seconds.
+        :param context_lengths_num_intervals: The number of intervals for the context length. Default is 40.
         :param context_lengths: The lengths of the context. Default is None.
-        :param video_depth_percent_min: The minimum depth percent of the document. Default is 0.
-        :param video_depth_percent_max: The maximum depth percent of the document. Default is 100.
-        :param video_depth_percent_intervals: The number of intervals for the document depth percent. Default is 35.
-        :param video_depth_percents: The depth percentages of the document. Default is None.
-        :param video_depth_percent_interval_type: The type of interval for the document depth percent. Must be either 'linear' or 'sigmoid'. Default is 'linear'.
+        :param video_depth_percent_min: The minimum depth percent of the video. Default is 0.
+        :param video_depth_percent_max: The maximum depth percent of the video. Default is 100.
+        :param video_depth_percent_intervals: The number of intervals for the video depth percent. Default is 12.
+        :param video_depth_percents: The depth percentages of the video. Default is None.
+        :param video_depth_percent_interval_type: The type of interval for the video depth percent. Must be either 'linear' or 'sigmoid'. Default is 'linear'.
         :param seconds_to_sleep_between_completions: The number of seconds to sleep between completions. Default is None.
         :param print_ongoing_status: Whether or not to print the ongoing status. Default is True.
         :param kwargs: Additional arguments.
@@ -80,6 +81,7 @@ class LLMNeedleHaystackTester:
         self.needle = needle
         self.needle_desc = needle_desc
         self.needle_modality = needle_modality
+        self.needle_dir = needle_dir
         self.haystack_dir = haystack_dir
         self.retrieval_question = retrieval_question
         self.results_version = results_version
@@ -189,7 +191,7 @@ class LLMNeedleHaystackTester:
         if self.print_ongoing_status:
             print (f"-- Test Summary -- ")
             print (f"Duration: {test_elapsed_time:.1f} seconds")
-            print (f"Context: {context_length} tokens")
+            print (f"Context: {context_length} seconds")
             print (f"Depth: {depth_percent}%")
             print (f"Score: {score}")
             print (f"Response: {response}\n")
@@ -253,10 +255,11 @@ class LLMNeedleHaystackTester:
 
         return context
     
-    def adjust_font_size(self, text, max_width, font='Arial', min_font_size=10, max_font_size=70):
+    def adjust_font_size(self, text, max_width, font='FreeSans', min_font_size=10, max_font_size=70):
         # Estimate the font size without creating a TextClip each time
         # This is a naive approach and may need adjustment based on the actual font metrics
         font_size = max_font_size
+        # text_clip = TextClip(text, font_size=font_size, font=font)
         text_clip = TextClip(text, fontsize=font_size, font=font)
         text_width = text_clip.size[0]
         text_clip.close()
@@ -274,6 +277,8 @@ class LLMNeedleHaystackTester:
 
         # insert needle
         insertion_point = int(context_length * depth_percent / 100)
+        new_context = context.replace('.mp4', f'_{self.needle_modality}_{context_length}_{insertion_point}.mp4')
+        if os.path.exists(new_context): return new_context
         if self.needle_modality == 'text':
             # adjust text width
             max_text_width = video.size[0] * 0.9
@@ -281,27 +286,28 @@ class LLMNeedleHaystackTester:
             # insert text needle
             text = TextClip(
                 self.needle, 
-                fontsize=font_size, 
+                fontsize=font_size,
+                # font_size=font_size, 
                 color='white',
-                font='Arial'
+                bg_color='',
+                font='FreeSans'
             ).set_position("bottom").set_duration(1).set_start(insertion_point)
             new_video = CompositeVideoClip([video, text])
         elif self.needle_modality == 'video':
             # insert video needle
             base_dir = os.path.abspath(os.path.dirname(__file__))  # Package directory
-            self.needle = os.path.join(base_dir, self.haystack_dir, "insert.mp4")
+            self.needle = os.path.join(base_dir, self.needle_dir, self.needle)
             insert_video = VideoFileClip(self.needle).set_start(insertion_point).set_position("center")
             new_video = CompositeVideoClip([video, insert_video])
         elif self.needle_modality == 'image':
             # insert image needle
             base_dir = os.path.abspath(os.path.dirname(__file__))  # Package directory
-            self.needle = os.path.join(base_dir, self.haystack_dir, "insert.jpg")
+            self.needle = os.path.join(base_dir, self.needle_dir, self.needle)
             insert_image = ImageClip(self.needle).set_duration(1).set_start(insertion_point).set_position("center")
             new_video = CompositeVideoClip([video, insert_image])
         else:
             video.close()
             raise NotImplementedError("Invalid needle modality, available needle: 'text', 'video', 'image")
-        new_context = context.replace('.mp4', f'_{self.needle_modality}_{insertion_point}.mp4')
         new_video.write_videofile(new_context, codec="libx264", fps=5, logger=None) # fps=video.fps
         # release resource
         video.close()
@@ -330,10 +336,14 @@ class LLMNeedleHaystackTester:
         clips = []
         context_length = 0
         while context_length < max_context_length:
+            # print("start to scan video")
+            # print(os.path.join(base_dir, self.haystack_dir, "*.mp4"))
             for file in glob.glob(os.path.join(base_dir, self.haystack_dir, "*.mp4")):
+                # print(file)
                 video = VideoFileClip(file)
                 context_length += video.duration
                 clips.append(video)
+                if context_length >= max_context_length: break
         clip_video = concatenate_videoclips(clips)
         clip_video.write_videofile(context, codec="libx264", audio_codec="aac", logger=None)
         print("complete create context video.")

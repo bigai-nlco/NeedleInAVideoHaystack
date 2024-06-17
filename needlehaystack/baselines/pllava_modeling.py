@@ -4,15 +4,16 @@ import torch
 from peft import get_peft_model, LoraConfig, TaskType
 
 # videochat
-from pllava.utils.easydict import EasyDict
-from pllava.tasks.eval.model_utils import load_pllava
-from pllava.tasks.eval.eval_utils import (
+from .pllava.models.pllava import PllavaProcessor, PllavaForConditionalGeneration, PllavaConfig
+from .pllava.utils.easydict import EasyDict
+from .pllava.tasks.eval.model_utils import load_pllava
+from .pllava.tasks.eval.eval_utils import (
     ChatPllava,
     conv_plain_v1,
     Conversation,
     conv_templates
 )
-from pllava.tasks.eval.demo import pllava_theme
+from .pllava.tasks.eval.demo import pllava_theme
 
 
 SYSTEM="""You are Pllava, a large vision-language assistant. 
@@ -21,7 +22,7 @@ Follow the instructions carefully and explain your answers in detail based on th
 """
 INIT_CONVERSATION: Conversation = conv_plain_v1.copy()
 
-from base import ViLLMBaseModel
+from .base import ViLLMBaseModel
 
 class PLLaVA(ViLLMBaseModel):
     def __init__(self, model_args):
@@ -31,10 +32,12 @@ class PLLaVA(ViLLMBaseModel):
             and "device" in model_args
         )
 
+        self.model_name = "PLLaVA"
+
         # init model
         self.model, self.processor = load_pllava(
             model_args['model_path'],
-            16,
+            320,
             use_lora=True,
             weight_dir=model_args['model_path'],
             lora_alpha=4,
@@ -45,13 +48,13 @@ class PLLaVA(ViLLMBaseModel):
         self.chat = ChatPllava(self.model, self.processor)
         self.model_args = model_args
         
-    def generate(self, instruction, video_path):
+    async def generate(self, instruction, video_path):
 
         num_beams = 1
         temperature = 0.2
         max_new_tokens = 200
         if '34b' in self.model_args["model_path"]: max_new_tokens = 5 # FIXME
-
+        
         chat_state = INIT_CONVERSATION.copy()
         img_list = []
         llm_message, img_list, chat_state = self.chat.upload_video(video_path, chat_state, img_list, None, )

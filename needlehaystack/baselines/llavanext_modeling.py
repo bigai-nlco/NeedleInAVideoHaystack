@@ -1,10 +1,10 @@
 import torch
 
-from llavavid.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
-from llavavid.conversation import conv_templates, SeparatorStyle
-from llavavid.model.builder import load_pretrained_model
-from llavavid.utils import disable_torch_init
-from llavavid.mm_utils import tokenizer_image_token, get_model_name_from_path, KeywordsStoppingCriteria
+from .llavavid.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN
+from .llavavid.conversation import conv_templates, SeparatorStyle
+from .llavavid.model.builder import load_pretrained_model
+from .llavavid.utils import disable_torch_init
+from .llavavid.mm_utils import tokenizer_image_token, get_model_name_from_path, KeywordsStoppingCriteria
 
 import json
 import os
@@ -19,7 +19,7 @@ import time
 import numpy as np
 
 
-from base import ViLLMBaseModel
+from .base import ViLLMBaseModel
 
 
 class Args:
@@ -63,6 +63,8 @@ class LLaVANeXT(ViLLMBaseModel):
             and "device" in model_args
         )
 
+        self.model_name = "LLaVANeXT"
+
         self.device = model_args["device"]
 
         args = Args()
@@ -73,7 +75,7 @@ class LLaVANeXT(ViLLMBaseModel):
         args.set_args(
             model_path=model_args["model_path"],
             conv_mode=conv_mode,
-            for_get_frames_num=32,
+            for_get_frames_num=300,
             mm_spatial_pool_stride=2
         )
 
@@ -114,7 +116,7 @@ class LLaVANeXT(ViLLMBaseModel):
         self.args = args
         
         
-    def generate(self, instruction, video_path):
+    async def generate(self, instruction, video_path):
         
         if os.path.exists(video_path):
             video = load_video(video_path, self.args)
@@ -143,13 +145,13 @@ class LLaVANeXT(ViLLMBaseModel):
             self.model.update_prompt([[cur_prompt]])
             # import pdb;pdb.set_trace()
             start_time = time.time()
-            output_ids = self.model.generate(inputs=input_ids, images=video, attention_mask=attention_masks, modalities="video", do_sample=True, temperature=0.2, max_new_tokens=1024, use_cache=True, stopping_criteria=[stopping_criteria])
+            output_ids = self.model.generate(inputs=input_ids, images=video, attention_mask=attention_masks, modalities="video", do_sample=True, temperature=0.2, max_new_tokens=40, use_cache=True, stopping_criteria=[stopping_criteria])
             end_time = time.time()
             # print(f"Time taken for inference: {end_time - start_time} seconds")
 
         outputs = self.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
         if outputs.endswith(stop_str):
-            outputs = outptus[:-len(stop_str)]
+            outputs = outputs[:-len(stop_str)]
         outputs = outputs.strip()
 
         return outputs
@@ -168,9 +170,10 @@ def get_chunk(lst, n, k):
 def load_video(video_path, args):
     vr = VideoReader(video_path, ctx=cpu(0))
     total_frame_num = len(vr)
-    # fps = round(vr.get_avg_fps())
+    fps = round(vr.get_avg_fps())
+    secs = total_frame_num / fps
     # frame_idx = [i for i in range(0, len(vr), fps)]
-    uniform_sampled_frames = np.linspace(0, total_frame_num - 1, args.for_get_frames_num, dtype=int)
+    uniform_sampled_frames = np.linspace(0, total_frame_num - 1, int(secs), dtype=int)
     frame_idx = uniform_sampled_frames.tolist()
     spare_frames = vr.get_batch(frame_idx).asnumpy()
     return spare_frames

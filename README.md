@@ -1,196 +1,147 @@
-# Needle In A Haystack - Pressure Testing LLMs
+<div align="center">
 
-A simple 'needle in a haystack' analysis to test in-context retrieval ability of long context LLMs.
+# Multimmodal Needle In A Video Haystack
 
-Supported model providers: OpenAI, Anthropic, Cohere
+<!-- [![NIAVH-page]()]() -->
+<!-- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>)
+[![Conference](http://img.shields.io/badge/AnyConference-year-4b44ce.svg)](https://<CONFERENCE>) -->
 
-Get the behind the scenes on the [overview video](https://youtu.be/KwRRuiCCdmc).
+</div>
 
-![GPT-4-128 Context Testing](img/NeedleHaystackCodeSnippet.png)
 
-## The Test
+![image](assets/needle.png)
 
-1. Place a random fact or statement (the 'needle') in the middle of a long context window (the 'haystack')
-2. Ask the model to retrieve this statement
-3. Iterate over various document depths (where the needle is placed) and context lengths to measure performance
+**Table of Contents**
 
-This is the code that backed [this OpenAI](https://twitter.com/GregKamradt/status/1722386725635580292) and [Anthropic analysis](https://twitter.com/GregKamradt/status/1727018183608193393).
+- [Introduction](#introduction)
+- [Getting Start](#getting-started)
+    - [Install](#install)
+    - [Run Test](#run-test)
+    - [Visualization](#visualization)
+- [Evaluation Results](#evaluation-results)
+- [Acknowledge](#acknowledge)
 
-The results from the original tests are in `/original_results`. The script has upgraded a lot since those test were ran so the data formats may not match your script results.
+
+## Introduction
+
+To address existing limitations in long-form video language understanding benchmarks, our work takes inspiration from the latest developments in the field and develops a new benchmark specifically designed for the task of identifying specific content within extensive video material, a challenge we refer to as the Multimodal Needle In A Video Haystack (NIAVH). This benchmark is unique in that it supports queries in various modalities, including text, image, and video, allowing for a more comprehensive assessment of a model's video understanding capability.
+
+In our benchmark, we utilize ego-centric videos from the Ego4D dataset as the "haystack". Within this haystack, we seek to locate the "needle", which we provide in three distinct modalities. For the textual modality, we supply a crafted description. For the image modality, we employ DALL-E to create an image that visually represents this description. For the video modality, we use Sora to generate a short video clip based on the same description. In each case, the "needle" - whether text, image, or video - is set to a duration of 1 second
+
 
 ## Getting Started
 
-### Setup Virtual Environment
+Currently support models: 
 
-We recommend setting up a virtual environment to isolate Python dependencies, ensuring project-specific packages without conflicting with system-wide installations.
+- GPT4O (Azure only support 20 frames), 
+- [LLaVA-NeXT-Video-DPO](https://github.com/LLaVA-VL/LLaVA-NeXT/blob/inference/docs/LLaVA-NeXT-Video.md)
+- [PLLaVA](https://github.com/magic-research/PLLaVA)
+- [MA-LMM](https://github.com/boheumd/MA-LMM)
+
+
+
+Installation
+
+- GPT4O (Azure) 
+    - create .env file, then add `API_BASE` and `API_KEY`
+    - install `numpy`, `opencv-python`
+- LLaVA-NeXT-Video:
+    - install environment following its instruction
+    - download checkpoint into `needlehaystack/baselines/checkpoints/LLaVA-NeXT-Video/LLaVA-NeXT-Video-7B-DPO`
+- PLLaVA
+    - install environment following its instruction
+    - download checkpoint into `needlehaystack/baselines/checkpoints/PLLaVA/pllava-7b`
+- MA-LMM
+    - install environment following its instruction
+    - download checkpoint into `needlehaystack/baselines/checkpoints/MA-LMM`, including `vicuna-7b-v1.1`, `eva_vit_g.pth`, `instruct_blip_vicuna7b_trimmed.pth`
+
+
+
+
+### Install
+
+Install the additional package in the model to be tested environment:
 
 ```zsh
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Environment Variables
-
-- `NIAH_MODEL_API_KEY` - API key for interacting with the model. Depending on the provider, this gets used appropriately with the correct sdk.
-- `NIAH_EVALUATOR_API_KEY` - API key to use if `openai` evaluation strategy is used.
-
-### Install Package
-
-Install the package from PyPi:
-
-```zsh
-pip install needlehaystack
+pip install -r requirements.txt
 ```
 
 ### Run Test
 
-Start using the package by calling the entry point `needlehaystack.run_test` from command line.
 
-You can then run the analysis on OpenAI, Anthropic, or Cohere models with the following command line arguments:
-
-- `provider` - The provider of the model, available options are `openai`, `anthropic`, and `cohere`. Defaults to `openai`
-- `evaluator` - The evaluator, which can either be a `model` or `LangSmith`. See more on `LangSmith` below. If using a `model`, only `openai` is currently supported. Defaults to `openai`.
-- `model_name` - Model name of the language model accessible by the provider. Defaults to `gpt-3.5-turbo-0125`
-- `evaluator_model_name` - Model name of the language model accessible by the evaluator. Defaults to `gpt-3.5-turbo-0125`
-
-Additionally, `LLMNeedleHaystackTester` parameters can also be passed as command line arguments, except `model_to_test` and `evaluator`.
-
-Here are some example use cases.
-
-Following command runs the test for openai model `gpt-3.5-turbo-0125` for a single context length of 2000 and single document depth of 50%.
-
-```zsh
-needlehaystack.run_test --provider openai --model_name "gpt-3.5-turbo-0125" --document_depth_percents "[50]" --context_lengths "[2000]"
+single needle debug
+```bash
+python -m needlehaystack.run --provider GPT4O --video_depth_percents "[50]" --context_lengths "[10]"
 ```
 
-Following command runs the test for anthropic model `claude-2.1` for a single context length of 2000 and single document depth of 50%.
-
-```zsh
-needlehaystack.run_test --provider anthropic --model_name "claude-2.1" --document_depth_percents "[50]" --context_lengths "[2000]"
+pressure test
+```bash
+python -m needlehaystack.run --provider GPT4O
 ```
 
-Following command runs the test for cohere model `command-r` for a single context length of 2000 and single document depth of 50%.
 
-```zsh
-needlehaystack.run_test --provider cohere --model_name "command-r" --document_depth_percents "[50]" --context_lengths "[2000]"
+
+parameters
+
+- `provider` - currently support model: `GPT4O`, `LLaVA-NeXT`, `PLLaVA`, `MA-LMM`
+- `evaluator_model_name` - currently support evaluation API: `gpt-35-turbo-0125`
+- `needle` - needle, could be string, video name, or image
+- `needle_modality` - currently support `text`, `image`, `video`
+- `needle_desc` - required for image or video needle (question answer)
+- `retrieval_question` - required for image or video needle (question)
+- `needle_dir` - required for image or video needle (directory to save needle)
+- `haystack_dir` - required for image or video haystack (directory to save haystacks)
+- `context_lengths` - video context length
+- `video_depth_percents` - needle percent
+- `context_lengths_min` - The minimum length of the context. Default is 1 seconds.
+- `context_lengths_max` - The maximum length of the context. Default is 320 seconds.
+- `context_lengths_num_intervals` - The number of intervals for the context length. Default is 40.
+- `video_depth_percent_min` - The minimum depth percent of the document. Default is 0.
+- `video_depth_percent_max` - The maximum depth percent of the document. Default is 100.
+- `video_depth_percent_intervals` - The number of intervals for the document depth percent. Default is 12.
+
+
+*note:* you can add more videos into `needlehaystack/haystack` directory to get longer video
+
+
+### Visualization
+
+use the `viz/visualization.ipynb` to visualize your result
+
+
+## Evaluation Results
+
+Given the limitations of current methods in understanding long videos, we designed an experiment where the "haystack" is a 320-second video. The "needle" is a 1-second video clip generated by Sora, prompted by the description, "the young man seated on a cloud in the sky is reading a book". The associated question posed for the experiment is, "What is the young man seated on a cloud in the sky doing?". We divided the context into 40 intervals and set the video depth at 12 intervals. 
+
+
+<img src="assets/needle.png" alt="Needle Case" width="800"/>
+
+
+### PLLaVA-7B (Run 6/5/2024)
+
+<img src="viz/img/pllava.png" alt="PLLaVA-7B Context Testing" width="800"/>
+
+### LLaVA-NeXT-Video-DPO-7B (Run 6/5/2024)
+
+<img src="viz/img/llavanext.png" alt="LLaVA-NeXT-Video-DPO-7B Context Testing" width="800"/>
+
+### MA-LMM (Run 6/5/2024)
+
+<img src="viz/img/malmm.png" alt="MALMM Context Testing" width="800"/>
+
+
+
+## Acknowledge
+
+This code is heavily built on [LLMTest_NeedleInAHaystack](https://github.com/gkamradt/LLMTest_NeedleInAHaystack). Many thanks to them for their work.
+
+## Citation
+
+```bibtex
+@article{mm-niavh,
+    title={Multimodal Needle in A Video Haystack},
+    author={Wang, Yuxuan and Xie, Cihang and Liu, Yang and Zheng, Zilong},
+    journal={github},
+    year={2024}
+}
 ```
-### For Contributors
-
-1. Fork and clone the repository.
-2. Create and activate the virtual environment as described above.
-3. Set the environment variables as described above.
-4. Install the package in editable mode by running the following command from repository root:
-
-```zsh
-pip install -e .
-```
-
-The package `needlehaystack` is available for import in your test cases. Develop, make changes and test locally.
-
-## `LLMNeedleHaystackTester` parameters:
-
-- `model_to_test` - The model to run the needle in a haystack test on. Default is None.
-- `evaluator` - An evaluator to evaluate the model's response. Default is None.
-- `needle` - The statement or fact which will be placed in your context ('haystack')
-- `haystack_dir` - The directory which contains the text files to load as background context. Only text files are supported
-- `retrieval_question` - The question with which to retrieve your needle in the background context
-- `results_version` - You may want to run your test multiple times for the same combination of length/depth, change the version number if so
-- `num_concurrent_requests` - Default: 1. Set higher if you'd like to run more requests in parallel. Keep in mind rate limits.
-- `save_results` - Whether or not you'd like to save your results to file. They will be temporarily saved in the object regardless. True/False. If `save_results = True`, then this script will populate a `result/` directory with evaluation information. Due to potential concurrent requests each new test will be saved as a few file.
-- `save_contexts` - Whether or not you'd like to save your contexts to file. **Warning** these will get very long. True/False
-- `final_context_length_buffer` - The amount of context to take off each input to account for system messages and output tokens. This can be more intelligent but using a static value for now. Default 200 tokens.
-- `context_lengths_min` - The starting point of your context lengths list to iterate
-- `context_lengths_max` - The ending point of your context lengths list to iterate
-- `context_lengths_num_intervals` - The number of intervals between your min/max to iterate through
-- `context_lengths` - A custom set of context lengths. This will override the values set for `context_lengths_min`, max, and intervals if set
-- `document_depth_percent_min` - The starting point of your document depths. Should be int > 0
-- `document_depth_percent_max` - The ending point of your document depths. Should be int < 100
-- `document_depth_percent_intervals` - The number of iterations to do between your min/max points
-- `document_depth_percents` - A custom set of document depths lengths. This will override the values set for `document_depth_percent_min`, max, and intervals if set
-- `document_depth_percent_interval_type` - Determines the distribution of depths to iterate over. 'linear' or 'sigmoid
-- `seconds_to_sleep_between_completions` - Default: None, set # of seconds if you'd like to slow down your requests
-- `print_ongoing_status` - Default: True, whether or not to print the status of test as they complete
-
-`LLMMultiNeedleHaystackTester` parameters:
-
-- `multi_needle` - True or False, whether to run multi-needle
-- `needles` - List of needles to insert in the context
-
-Other Parameters:
-
-- `model_name` - The name of the model you'd like to use. Should match the exact value which needs to be passed to the api. Ex: For OpenAI inference and evaluator models it would be `gpt-3.5-turbo-0125`.
-
-## Results Visualization
-
-`LLMNeedleInHaystackVisualization.ipynb` holds the code to make the pivot table visualization. The pivot table was then transferred to Google Slides for custom annotations and formatting. See the [google slides version](https://docs.google.com/presentation/d/15JEdEBjm32qBbqeYM6DK6G-3mUJd7FAJu-qEzj8IYLQ/edit?usp=sharing). See an overview of how this viz was created [here](https://twitter.com/GregKamradt/status/1729573848893579488).
-
-## OpenAI's GPT-4-128K (Run 11/8/2023)
-
-<img src="img/GPT_4_testing.png" alt="GPT-4-128 Context Testing" width="800"/>
-
-## Anthropic's Claude 2.1 (Run 11/21/2023)
-
-<img src="img/Claude_2_1_testing.png" alt="GPT-4-128 Context Testing" width="800"/>
-
-## Multi Needle Evaluator
-
-To enable multi-needle insertion into our context, use `--multi_needle True`.
-
-This inserts the first needle at the specified `depth_percent`, then evenly distributes subsequent needles through the remaining context after this depth.
-
-For even spacing, it calculates the `depth_percent_interval` as:
-
-```
-depth_percent_interval = (100 - depth_percent) / len(self.needles)
-```
-
-So, the first needle is placed at a depth percent of `depth_percent`, the second at `depth_percent + depth_percent_interval`, the third at `depth_percent + 2 * depth_percent_interval`, and so on.
-
-Following example shows the depth percents for the case of 10 needles and depth_percent of 40%.
-
-```
-depth_percent_interval = (100 - 40) / 10 = 6
-
-Needle 1: 40
-Needle 2: 40 + 6 = 46
-Needle 3: 40 + 2 * 6 = 52
-Needle 4: 40 + 3 * 6 = 58
-Needle 5: 40 + 4 * 6 = 64
-Needle 6: 40 + 5 * 6 = 70
-Needle 7: 40 + 6 * 6 = 76
-Needle 8: 40 + 7 * 6 = 82
-Needle 9: 40 + 8 * 6 = 88
-Needle 10: 40 + 9 * 6 = 94
-```
-
-## LangSmith Evaluator
-
-You can use LangSmith to orchestrate evals and store results.
-
-(1) Sign up for [LangSmith](https://docs.smith.langchain.com/setup)
-(2) Set env variables for LangSmith as specified in the setup.
-(3) In the `Datasets + Testing` tab, use `+ Dataset` to create a new dataset, call it `multi-needle-eval-sf` to start.
-(4) Populate the dataset with a test question:
-
-```
-question: What are the 5 best things to do in San Franscisco?
-answer: "The 5 best things to do in San Francisco are: 1) Go to Dolores Park. 2) Eat at Tony's Pizza Napoletana. 3) Visit Alcatraz. 4) Hike up Twin Peaks. 5) Bike across the Golden Gate Bridge"
-```
-
-![Screenshot 2024-03-05 at 4 54 15 PM](https://github.com/rlancemartin/LLMTest_NeedleInAHaystack/assets/122662504/2f903955-ed1d-49cc-b995-ed0407d6212a)
-(5) Run with ` --evaluator langsmith` and `--eval_set multi-needle-eval-sf` to run against our recently created eval set.
-
-Let's see all these working together on a new dataset, `multi-needle-eval-pizza`.
-
-Here is the `multi-needle-eval-pizza` eval set, which has a question and reference answer. You can also and resulting runs:
-https://smith.langchain.com/public/74d2af1c-333d-4a73-87bc-a837f8f0f65c/d
-
-Here is the command to run this using multi-needle eval and passing the relevant needles:
-
-```
-needlehaystack.run_test --evaluator langsmith --context_lengths_num_intervals 3 --document_depth_percent_intervals 3 --provider openai --model_name "gpt-4-0125-preview" --multi_needle True --eval_set multi-needle-eval-pizza --needles '["Figs are one of the three most delicious pizza toppings.", "Prosciutto is one of the three most delicious pizza toppings.", "Goat cheese is one of the three most delicious pizza toppings."]'
-```
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details. Use of this software requires attribution to the original author and project, as detailed in the license.
