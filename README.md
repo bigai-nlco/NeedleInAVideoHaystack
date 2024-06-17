@@ -60,7 +60,7 @@ Installation
 
 ### Install
 
-Install the additional package in the model to be tested environment:
+Install the additional package in the environment of model to be tested:
 
 ```zsh
 pip install -r requirements.txt
