@@ -20,6 +20,7 @@
     - [Visualization](#visualization)
 - [Evaluation Results](#evaluation-results)
 - [Acknowledge](#acknowledge)
+- [Citation](#citation)
 
 
 ## Introduction
@@ -136,6 +137,9 @@ Given the limitations of current methods in understanding long videos, we design
 This code is heavily built on [LLMTest_NeedleInAHaystack](https://github.com/gkamradt/LLMTest_NeedleInAHaystack). Many thanks to them for their work.
 
 ## Citation
+
+If you find our work helpful, please consider citing it.
+
 
 ```bibtex
 @article{mm-niavh,
