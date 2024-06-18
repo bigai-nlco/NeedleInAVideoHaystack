@@ -142,7 +142,7 @@ If you find our work helpful, please consider citing it.
 
 
 ```bibtex
-@article{mm-niavh,
+@misc{mm-niavh,
     title={Multimodal Needle In A Video Haystack},
     author={Wang, Yuxuan and Xie, Cihang and Liu, Yang and Zheng, Zilong},
     journal={github},
