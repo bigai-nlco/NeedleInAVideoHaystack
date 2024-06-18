@@ -24,7 +24,7 @@
 
 ## Introduction
 
-To address existing limitations in long-form video language understanding benchmarks, our work takes inspiration from the latest developments in the field and develops a new benchmark specifically designed for the task of identifying specific content within extensive video material, a challenge we refer to as the Multimodal Needle In A Video Haystack (NIAVH). This benchmark is unique in that it supports queries in various modalities, including text, image, and video, allowing for a more comprehensive assessment of a model's video understanding capability.
+To address existing limitations in long-form video language understanding benchmarks, our work takes inspiration from the latest developments in the field and develops a new benchmark specifically designed for the task of identifying specific content within extensive video material, a challenge we refer to as the Multimodal Needle In A Video Haystack (NIAVH). **This benchmark is unique due to its flexibility in supporting various modalities such as text, images, and videos. It accommodates video content of any length, enabling a more comprehensive assessment of a model's video understanding capabilities**.
 
 In our benchmark, we utilize ego-centric videos from the Ego4D dataset as the "haystack". Within this haystack, we seek to locate the "needle", which we provide in three distinct modalities. For the textual modality, we supply a crafted description. For the image modality, we employ DALL-E to create an image that visually represents this description. For the video modality, we use Sora to generate a short video clip based on the same description. In each case, the "needle" - whether text, image, or video - is set to a duration of 1 second
 
