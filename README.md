@@ -145,3 +145,11 @@ This code is heavily built on [LLMTest_NeedleInAHaystack](https://github.com/gka
     year={2024}
 }
 ```
+```bibtex
+@article{memobridge,
+    title={MemoBridge: Perception with Memory Cache in Video-Language Understanding using Recurrent Memory Bridges},
+    author={Wang, Yuxuan and Xie, Cihang and Liu, Yang and Zheng, Zilong},
+    journal={arxiv},
+    year={2024}
+}
+```
