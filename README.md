@@ -1,6 +1,6 @@
 <div align="center">
 
-# Multimmodal Needle In A Video Haystack
+# Needle In A Video Haystack
 
 <!-- [![NIAVH-page]()]() -->
 <!-- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>)
