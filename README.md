@@ -147,7 +147,8 @@ If you find our work helpful, please consider citing it.
 @misc{mm-niavh,
     title={MLLM Pressure Test: Needle In A Video Haystack},
     author={Wang, Yuxuan and Xie, Cihang and Liu, Yang and Zheng, Zilong},
-    journal={github},
+    publisher={github},
+    url={https://github.com/bigai-nlco/NeedleInAVideoHaystack},
     year={2024}
 }
 ```
