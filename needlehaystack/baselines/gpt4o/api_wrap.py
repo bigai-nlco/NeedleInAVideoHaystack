@@ -4,7 +4,7 @@ import json
 import sys
 import argparse
 import openai
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from abc import ABC, abstractmethod
 from tqdm import tqdm
 import time
@@ -21,23 +21,15 @@ API_BASE = getenv("API_BASE")
 API_KEY = getenv("API_KEY")
 
 
-REGIONS = {
-        "gpt-35-turbo-0125": ["canadaeast", "northcentralus", "southcentralus"],
-        "gpt-4-0125-preview": ["eastus", "northcentralus", "southcentralus"],
-        "gpt-4-vision-preview": ["australiaeast", "japaneast", "westus"],
-        "gpt-4o-2024-05-13": ["eastus", "eastus2", "northcentralus", "southcentralus", "westus", "westus3"],
-        "gpt-4-turbo-2024-04-09": ["eastus2", "swedencentral"],
-        "gpt-4-1106-preview": ["australiaeast"]
-    }
-
 class BaseAPIWrapper(ABC):
     @abstractmethod
     def get_completion(self, user_prompt, system_prompt=None):
         pass
 
 class OpenAIAPIWrapper(BaseAPIWrapper):
-    def __init__(self, caller_name="default", api_base="",  key_pool=[], temperature=0, model="gpt-4o-2024-05-13", time_out=5):
-        api_base = API_BASE
+    def __init__(self, caller_name="default", api_base="https://api.openai.com",  key_pool=[], temperature=0, model="gpt-4o", time_out=5):
+        if API_BASE != "":
+            api_base = API_BASE
         key_pool = [API_KEY]
         print(api_base)
         print(key_pool)
@@ -45,12 +37,10 @@ class OpenAIAPIWrapper(BaseAPIWrapper):
         self.model = model
         self.time_out = time_out
         self.api_key = random.choice(key_pool)
-        region = random.choice(REGIONS[model])
-        endpoint = f"{api_base}/{region}"
-        self.client = AzureOpenAI(
+        self.api_base = api_base
+        self.client = OpenAI(
             api_key=self.api_key,
-            api_version="2024-02-01",
-            azure_endpoint=endpoint
+            api_base=self.api_base,
         )
 
     def request(self, usr_question, system_content, video_path=None):
