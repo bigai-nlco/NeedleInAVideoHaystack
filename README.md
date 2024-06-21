@@ -1,6 +1,8 @@
 <div align="center">
 
+
 # MLLM Pressure Test: Needle In A Video Haystack
+
 
 <!-- [![NIAVH-page]()]() -->
 <!-- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>)
@@ -39,7 +41,7 @@ Currently support models:
 - [PLLaVA](https://github.com/magic-research/PLLaVA)
 - [MA-LMM](https://github.com/boheumd/MA-LMM)
 
-
+*For additional models, please refer to the baselines we have provided for setup.*
 
 Installation
 
@@ -134,7 +136,7 @@ Given the limitations of current methods in understanding long videos, we design
 
 ## Acknowledge
 
-This code is heavily built on [LLMTest_NeedleInAHaystack](https://github.com/gkamradt/LLMTest_NeedleInAHaystack). Many thanks to them for their work.
+This code is built on [LLMTest_NeedleInAHaystack](https://github.com/gkamradt/LLMTest_NeedleInAHaystack). Many thanks to them for their work.
 
 ## Citation
 
