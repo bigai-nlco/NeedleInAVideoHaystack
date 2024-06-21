@@ -36,7 +36,7 @@ In our benchmark, we utilize ego-centric videos from the Ego4D dataset as the "h
 
 Currently support models: 
 
-- GPT4O (Azure only support 20 frames), 
+- GPT4O, 
 - [LLaVA-NeXT-Video-DPO](https://github.com/LLaVA-VL/LLaVA-NeXT/blob/inference/docs/LLaVA-NeXT-Video.md)
 - [PLLaVA](https://github.com/magic-research/PLLaVA)
 - [MA-LMM](https://github.com/boheumd/MA-LMM)
@@ -45,8 +45,8 @@ Currently support models:
 
 Installation
 
-- GPT4O (Azure) 
-    - create .env file, then add `API_BASE` and `API_KEY`
+- GPT4O
+    - create .env file, then add `API_KEY=xxx`, `API_BASE=xxx` (optional)
     - install `numpy`, `opencv-python`
 - LLaVA-NeXT-Video:
     - install environment following its instruction

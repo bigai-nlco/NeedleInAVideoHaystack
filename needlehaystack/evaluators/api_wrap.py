@@ -4,7 +4,7 @@ import json
 import sys
 import argparse
 import openai
-from openai import AzureOpenAI
+from openai import AzureOpenAI, OpenAI
 from abc import ABC, abstractmethod
 from tqdm import tqdm
 import time
@@ -18,11 +18,6 @@ load_dotenv()
 API_BASE = getenv("API_BASE")
 API_KEY = getenv("API_KEY")
 
-REGIONS = {
-        "gpt-35-turbo-0125": ["canadaeast", "northcentralus", "southcentralus"],
-        "gpt-4-0125-preview": ["eastus", "northcentralus", "southcentralus"],
-        "gpt-4-vision-preview": ["australiaeast", "japaneast", "westus"]
-    }
 
 class BaseAPIWrapper(ABC):
     @abstractmethod
@@ -30,19 +25,18 @@ class BaseAPIWrapper(ABC):
         pass
 
 class OpenAIAPIWrapper(BaseAPIWrapper):
-    def __init__(self, caller_name="default", api_base="",  key_pool=[], temperature=0, model="gpt-4-vision-preview", time_out=5):
-        api_base = API_BASE
+    def __init__(self, caller_name="default", api_base="https://api.openai.com",  key_pool=[], temperature=0, model="gpt-4-vision-preview", time_out=5):
+        if API_BASE != "":
+            api_base = API_BASE
         key_pool = [API_KEY]
         self.temperature = temperature
         self.model = model
         self.time_out = time_out
         self.api_key = random.choice(key_pool)
-        region = random.choice(REGIONS[model])
-        endpoint = f"{api_base}/{region}"
-        self.client = AzureOpenAI(
+        self.api_base = api_base
+        self.client = OpenAI(
             api_key=self.api_key,
-            api_version="2024-02-01",
-            azure_endpoint=endpoint
+            api_base=self.api_base,
         )
 
     def request(self, usr_question, system_content, image_path=None):

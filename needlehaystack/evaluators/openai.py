@@ -7,14 +7,6 @@ from langchain.evaluation import load_evaluator
 from langchain_community.chat_models import ChatOpenAI, AzureChatOpenAI
 
 
-REGIONS = {
-        "gpt-35-turbo-0125": ["canadaeast", "northcentralus", "southcentralus"],
-        "gpt-4-0125-preview": ["eastus", "northcentralus", "southcentralus"],
-        "gpt-4-vision-preview": ["australiaeast", "japaneast", "westus"],
-        "gpt-4o-2024-05-13": ["eastus", "eastus2", "northcentralus", "southcentralus", "westus", "westus3"],
-        "gpt-4-turbo-2024-04-09": ["eastus2", "swedencentral"],
-        "gpt-4-1106-preview": ["australiaeast"]
-    }
 
 class OpenAIEvaluator(Evaluator):
     DEFAULT_MODEL_KWARGS: dict = dict(temperature=0)
@@ -47,16 +39,16 @@ class OpenAIEvaluator(Evaluator):
         self.question_asked = question_asked
 
         api_base = os.getenv("API_BASE")
+        if api_base == "":
+            api_base = "https://api.openai.com"
         api_key = os.getenv("API_KEY")
         if (not api_key) or (not api_base):
             raise ValueError("API_KEY and API_BASE must be in env for using openai evaluator.")
 
         self.api_key = api_key
-        region = random.choice(REGIONS[model_name])
-        self.endpoint = f"{api_base}/{region}"
-        self.evaluator = AzureChatOpenAI(azure_endpoint=self.endpoint,
+        self.api_base = api_base
+        self.evaluator = ChatOpenAI(api_base=self.api_base,
                                          api_key=self.api_key,
-                                         api_version="2024-02-01",
                                          model=self.model_name,
                                          **self.model_kwargs)
 
