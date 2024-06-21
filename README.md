@@ -1,6 +1,8 @@
 <div align="center">
 
-# Multimodal Needle In A Video Haystack
+
+# MLLM Pressure Test: Needle In A Video Haystack
+
 
 <!-- [![NIAVH-page]()]() -->
 <!-- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>)
@@ -143,7 +145,7 @@ If you find our work helpful, please consider citing it.
 
 ```bibtex
 @misc{mm-niavh,
-    title={Multimodal Needle In A Video Haystack},
+    title={MLLM Pressure Test: Needle In A Video Haystack},
     author={Wang, Yuxuan and Xie, Cihang and Liu, Yang and Zheng, Zilong},
     journal={github},
     year={2024}
